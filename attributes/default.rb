@@ -4,6 +4,7 @@ default[:drbd][:remote_host] = nil
 default[:drbd][:disk][:start] = "/dev/" #{node['lvm']['vg_name']}/data"
 default[:drbd][:mount] = "/data"
 default[:drbd][:fs_type] = "ext3"
+default[:drbd][:fs_parameters] = nil
 default[:drbd][:dev] = "/dev/drbd0"
 default[:drbd][:master] = false
 default[:drbd][:port] = 7789
