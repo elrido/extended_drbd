@@ -65,6 +65,8 @@ default[:drbd][:mount] = "/data"
 
 default[:drbd][:fs_type] = "ext3"
 
+defailt[:drbd][:fs_parameters] = nil
+
 default[:drbd][:dev] = "/dev/drbd0"
 
 default[:drbd][:master] = false
