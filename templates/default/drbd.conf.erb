@@ -7,9 +7,18 @@ common {
   disk {
     on-io-error detach;
   }
-  protocol C;
+  net {
+    protocol C;
+    allow-two-primaries <%= node['drbd']['two_masters'] ? 'yes' : 'no' %>;
+    after-sb-0pri <%= node['drbd']['splitbrain']['0primary'] %>;
+    after-sb-1pri <%= node['drbd']['splitbrain']['1primary'] %>;
+    after-sb-2pri <%= node['drbd']['splitbrain']['2primary'] %>;
+  }
 }
 resource <%= @resource %> {
+  startup {
+    <%= node['drbd']['two_masters'] ? 'become-primary-on both;' : '' %>
+  }
   on <%= @my_short_hostname %> {
     device    <%= node['drbd']['dev'] %>;
     disk      <%= node['drbd']['disk']['start']%><%=node['lvm']['vg_name']%><%=node['drbd']['mount'] %>;

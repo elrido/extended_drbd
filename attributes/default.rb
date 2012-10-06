@@ -7,9 +7,14 @@ default[:drbd][:fs_type] = "ext3"
 default[:drbd][:fs_parameters] = nil
 default[:drbd][:dev] = "/dev/drbd0"
 default[:drbd][:master] = false
+default[:drbd][:two_masters] = false
 default[:drbd][:port] = 7789
 default[:drbd][:syncrate] = "36M"
 default[:drbd][:resource] = "data"
+
+default[:drbd][:splitbrain][:0primary] = "discard-zero-changes"
+default[:drbd][:splitbrain][:1primary] = "discard-secondary"
+default[:drbd][:splitbrain][:2primary] = "disconnect"
 
 default[:drbd][:config_file] = "/etc/drbd.conf"
 

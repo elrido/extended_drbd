@@ -71,6 +71,8 @@ default[:drbd][:dev] = "/dev/drbd0"
 
 default[:drbd][:master] = false
 
+default[:drbd][:two_masters] = false
+
 default[:drbd][:port] = 7789
 
 default[:drbd][:configured] = false
@@ -88,6 +90,12 @@ default[:drbd][:initialized][:stop_file] = "/etc/drbd_initialized_stop_file"
 default[:drbd][:primary][:fqdn] = nil
 
 default[:drbd][:remote_host] = nil
+
+default[:drbd][:splitbrain][:0primary] = "discard-zero-changes"
+
+default[:drbd][:splitbrain][:1primary] = "discard-secondary"
+
+default[:drbd][:splitbrain][:2primary] = "disconnect"
 
 = License
 DRBD Chef Recipe
