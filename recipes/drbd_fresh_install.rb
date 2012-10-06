@@ -70,6 +70,10 @@ end
 
 execute "change sync rate on secondary server only if this is an inplace upgrade" do
     command "drbdsetup #{node[:drbd][:dev]} syncer -r 110M"
+    if not partner_primary or node[:drbd][:two_masters]
+        node[:drbd][:master] = true
+        Chef::Log.info("This is a DRBD master")
+    end
     action :run
     not_if {node[:drbd][:master] or system("#{stop_file_exists_command}")}
 end
