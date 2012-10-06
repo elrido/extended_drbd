@@ -8,11 +8,14 @@ common {
     on-io-error detach;
   }
   net {
-    protocol C;
-    allow-two-primaries <%= node['drbd']['two_masters'] ? 'yes' : 'no' %>;
-    after-sb-0pri <%= node['drbd']['splitbrain']['0primary'] %>;
-    after-sb-1pri <%= node['drbd']['splitbrain']['1primary'] %>;
-    after-sb-2pri <%= node['drbd']['splitbrain']['2primary'] %>;
+    <%= node['drbd']['two_masters'] ? 'allow-two-primaries;' : '' %>
+    after-sb-0pri <%= node['drbd']['splitbrain']['primary0'] %>;
+    after-sb-1pri <%= node['drbd']['splitbrain']['primary1'] %>;
+    after-sb-2pri <%= node['drbd']['splitbrain']['primary2'] %>;
+  }
+  protocol C;
+  syncer {
+     rate <%= node['drbd']['syncrate']%>;
   }
 }
 resource <%= @resource %> {
@@ -21,18 +24,15 @@ resource <%= @resource %> {
   }
   on <%= @my_short_hostname %> {
     device    <%= node['drbd']['dev'] %>;
-    disk      <%= node['drbd']['disk']['start']%><%=node['lvm']['vg_name']%><%=node['drbd']['mount'] %>;
-    address   <%=@my_ip%>:<%= node['drbd']['port'] %>;
+    disk      <%= node['drbd']['mount'] %>;
+    address   <%= @my_ip %>:<%= node['drbd']['port'] %>;
     meta-disk internal;
   }
   on <%= @partner_short_hostname %> {
     device    <%= node['drbd']['dev'] %>;
-    disk      <%= node['drbd']['disk']['start']%><%=node['lvm']['vg_name']%><%=node['drbd']['mount'] %>;
+    disk      <%= node['drbd']['mount'] %>;
     address   <%= @partner_ip %>:<%= node['drbd']['port'] %>;
     meta-disk internal;
-  }
-  syncer {
-     rate <%= node['drbd']['syncrate']%>;
   }
 }
 

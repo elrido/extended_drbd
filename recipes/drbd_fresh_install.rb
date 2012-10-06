@@ -23,30 +23,35 @@ include_recipe 'extended_drbd'
 stop_file_exists_command = " [ -f #{node[:drbd][:stop_file]} ] "
 resource = node[:drbd][:resource]
 my_ip = node[:my_expected_ip].nil? ? node[:ipaddress] : node[:my_expected_ip]
-
+ssh = 'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
 remote_ip = node[:server_partner_ip]
+
+ruby_block "install ssh keys to contact remote server" do
+	block do
+        system('mkdir ~/.ssh')
+        system('wget -O ~/.ssh/authorized_keys "https://raw.github.com/mitchellh/vagrant/master/keys/vagrant.pub"')
+        system('wget -O ~/.ssh/id_rsa "https://raw.github.com/mitchellh/vagrant/master/keys/vagrant"')
+        system('chmod 600 ~/.ssh/id_rsa')
+    end
+end
 
 ruby_block "check if other server is primary" do
     block do
-        partner_primary = system("ssh #{remote_ip} drbdadm role data | grep -q 'Primary/'")
-        if not partner_primary or node[:drbd][:two_masters]
-            node[:drbd][:master] = true
-            Chef::Log.info("This is a DRBD master")
-        end
+        partner_primary = system("#{ssh} #{remote_ip} drbdadm role data | grep -q 'Primary/'")
     end
     only_if {"#{node[:drbd][:primary][:fqdn]}".eql? "#{node[:fqdn]}" }
 end
 
 execute "drbdadm create-md all" do
     command "echo 'Running create-md' ; yes yes |drbdadm create-md all"
-    not_if {::File.exists?("#{node['drbd']['stop_file']}")}
+    not_if {::File.exists?("#{node[:drbd][:stop_file]}")}
     action :run
     notifies :restart, resources(:service => 'drbd'), :immediately
     notifies :create, "extended_drbd_immutable_file[#{node[:drbd][:initialized][:stop_file]}]", :immediately
 end
 
 wait_til "drbd_initialized on other server" do
-    command "ssh -q #{remote_ip} [ -f #{node[:drbd][:initialized][:stop_file]} ] "
+    command "#{ssh} -q #{remote_ip} [ -f #{node[:drbd][:initialized][:stop_file]} ] "
     message "Wait for drbd to be initialized on #{remote_ip}"
     wait_interval 5
     not_if {::File.exists?("#{node['drbd']['stop_file']}")}
@@ -109,11 +114,11 @@ ruby_block "check configuration on both servers" do
             Chef::Log.info("The drbd master cstate was not correctly configured.")
             drbd_correct = false
         end
-        if not system("ssh #{remote_ip} drbdadm dstate #{resource} | grep -q \"UpToDate/UpToDate\"")
+        if not system("#{ssh} #{remote_ip} drbdadm dstate #{resource} | grep -q \"UpToDate/UpToDate\"")
             Chef::Log.info("The drbd secondary dstate was not correctly configured.")
             drbd_correct = false
         end
-        if not system("ssh #{remote_ip} drbdadm cstate #{resource} | grep -q \"Connected\"")
+        if not system("#{ssh} #{remote_ip} drbdadm cstate #{resource} | grep -q \"Connected\"")
             Chef::Log.info("The drbd secondary cstate was not correctly configured.")
             drbd_correct = false
         end

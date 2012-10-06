@@ -12,9 +12,9 @@ default[:drbd][:port] = 7789
 default[:drbd][:syncrate] = "36M"
 default[:drbd][:resource] = "data"
 
-default[:drbd][:splitbrain][:0primary] = "discard-zero-changes"
-default[:drbd][:splitbrain][:1primary] = "discard-secondary"
-default[:drbd][:splitbrain][:2primary] = "disconnect"
+default[:drbd][:splitbrain][:primary0] = "discard-zero-changes"
+default[:drbd][:splitbrain][:primary1] = "discard-secondary"
+default[:drbd][:splitbrain][:primary2] = "disconnect"
 
 default[:drbd][:config_file] = "/etc/drbd.conf"
 
